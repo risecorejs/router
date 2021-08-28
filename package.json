@@ -1,0 +1,22 @@
+{
+  "name": "@risecorejs/router",
+  "version": "1.0.0",
+  "description": "",
+  "main": "middleware.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/risecorejs/router.git"
+  },
+  "keywords": [
+    "router"
+  ],
+  "author": "Amenov Abdulsalam <risecorejs@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/risecorejs/router/issues"
+  },
+  "homepage": "https://github.com/risecorejs/router#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
