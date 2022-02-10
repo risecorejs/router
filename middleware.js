@@ -1,8 +1,9 @@
 const express = require('express')
 
-const Router = express.Router()
 
 module.exports = (routes, paths) => {
+  const Router = express.Router()
+
   const recursiveFilling = (routes, parentUrl = '', parentMiddleware = []) => {
     for (const route of routes) {
       if (process.env.NODE_ENV === 'production' && route.dev) {
