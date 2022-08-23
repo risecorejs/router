@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const express_1 = __importDefault(require("express"));
+const path_1 = __importDefault(require("path"));
 /**
  * MAIN
  * @param routes {RouteInterface[]}
@@ -10,6 +11,9 @@ const express_1 = __importDefault(require("express"));
  * @return {express.Router}
  */
 function main(routes, options) {
+    options ||= {};
+    options.controllersDir ||= path_1.default.resolve('controllers');
+    options.middlewareDir ||= path_1.default.resolve('middleware');
     const Router = express_1.default.Router();
     fillingRouter(Router, routes, options);
     return Router;
@@ -45,7 +49,7 @@ function fillingRouter(Router, routes, options, parentUrl = '', parentMiddleware
         }
         if (route.method && route.controller) {
             const controller = getController(route.controller, options);
-            Router[route.method](url, ...middleware, controller);
+            Router[route.method.toLowerCase()](url, ...middleware, controller);
         }
         if (route.children?.length) {
             fillingRouter(Router, route.children, options, url, middleware);
