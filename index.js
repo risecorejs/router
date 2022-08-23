@@ -1,93 +1,78 @@
-const express = require('express')
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const express_1 = __importDefault(require("express"));
 /**
- * ROUTER
- * @param routes {Array}
- * @param paths {{
- *   controllers: string,
- *   middleware: string
- * }}
- * @return {Object}
+ * MAIN
+ * @param routes {RouteInterface[]}
+ * @param options {OptionsInterface}
+ * @return {express.Router}
  */
-module.exports = (routes, paths) => {
-  const Router = express.Router()
-
-  recursive(routes, paths, Router)
-
-  return Router
+function main(routes, options) {
+    const Router = express_1.default.Router();
+    fillingRouter(Router, routes, options);
+    return Router;
 }
-
 /**
- * RECURSIVE
- * @param routes {Array}
- * @param paths {{
- *   controllers: string,
- *   middleware: string
- * }}
- * @param Router {Object}
+ * FILLING-ROUTER
+ * @param Router {express.Router}
+ * @param routes {RouteInterface[]}
+ * @param options {OptionsInterface}
  * @param parentUrl {string}
- * @param parentMiddleware {Array}
+ * @param parentMiddleware {express.Handler[]}
+ * @return {void}
  */
-function recursive(routes, paths, Router, parentUrl = '', parentMiddleware = []) {
-  for (const route of routes) {
-    if (process.env.NODE_ENV === 'production' && route.dev) {
-      continue
-    }
-
-    const url = parentUrl + (route.url || '')
-    const middleware = [...parentMiddleware]
-
-    if (route.middleware) {
-      const handlers = Array.isArray(route.middleware) ? route.middleware : [route.middleware]
-
-      for (const handler of handlers) {
-        if (typeof handler === 'string') {
-          middleware.push(require(paths.middleware + '/' + handler))
-        } else if (typeof handler === 'function') {
-          middleware.push(handler)
+function fillingRouter(Router, routes, options, parentUrl = '', parentMiddleware = []) {
+    for (const route of routes) {
+        if (route.dev && process.env.NODE_ENV === 'production') {
+            continue;
         }
-      }
+        const url = parentUrl + (route.url || '');
+        const middleware = [...parentMiddleware];
+        if (route.middleware) {
+            const middlewareHandlers = Array.isArray(route.middleware) ? route.middleware : [route.middleware];
+            for (const middlewareHandler of middlewareHandlers) {
+                switch (typeof middlewareHandler) {
+                    case 'string':
+                        middleware.push(require(options.middlewareDir + '/' + middlewareHandler));
+                        break;
+                    case 'function':
+                        middleware.push(middlewareHandler);
+                        break;
+                }
+            }
+        }
+        if (route.method && route.controller) {
+            const controller = getController(route.controller, options);
+            Router[route.method](url, ...middleware, controller);
+        }
+        if (route.children?.length) {
+            fillingRouter(Router, route.children, options, url, middleware);
+        }
     }
-
-    if (route.method && route.controller) {
-      const httpMethod = route.method.toLowerCase()
-
-      const controller = getController(route.controller, paths)
-
-      Router[httpMethod](url, ...middleware, controller)
-    }
-
-    if (route.children?.length) {
-      recursive(route.children, paths, Router, url, middleware)
-    }
-  }
 }
-
 /**
  * GET-CONTROLLER
- * @param controller {Function|string}
- * @param paths {{
- *   controllers: string,
- *   middleware: string
- * }}
- * @return {any}
+ * @param controller {express.Handler | string}
+ * @param options {OptionsInterface}
+ * @return {express.Handler}
  */
-function getController(controller, paths) {
-  switch (typeof controller) {
-    case 'function': {
-      return controller
+function getController(controller, options) {
+    switch (typeof controller) {
+        case 'function': {
+            return controller;
+        }
+        case 'string': {
+            const [controllerPath, controllerMethod] = controller.split('.');
+            const _controller = require(options.controllersDir + '/' + controllerPath);
+            if (controllerMethod) {
+                return _controller[controllerMethod];
+            }
+            else {
+                return _controller;
+            }
+        }
     }
-
-    case 'string': {
-      const [filePath, method] = controller.split('.')
-
-      const _controller = require(paths.controllers + '/' + filePath)
-
-      if (method) {
-        return _controller[method]
-      } else {
-        return _controller
-      }
-    }
-  }
 }
+module.exports = main;
