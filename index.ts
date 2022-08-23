@@ -1,6 +1,8 @@
 import express from 'express'
+import path from 'path'
 
 import { RouteInterface, OptionsInterface } from './interfaces'
+import { HTTPMethodLowerCaseType } from './types'
 
 export = main
 
@@ -11,6 +13,10 @@ export = main
  * @return {express.Router}
  */
 function main(routes: RouteInterface[], options: OptionsInterface): express.Router {
+  options ||= {}
+  options.controllersDir ||= path.resolve('controllers')
+  options.middlewareDir ||= path.resolve('middleware')
+
   const Router = express.Router()
 
   fillingRouter(Router, routes, options)
@@ -61,7 +67,7 @@ function fillingRouter(
     if (route.method && route.controller) {
       const controller = getController(route.controller, options)
 
-      Router[route.method](url, ...middleware, controller)
+      Router[<HTTPMethodLowerCaseType>route.method.toLowerCase()](url, ...middleware, controller)
     }
 
     if (route.children?.length) {
