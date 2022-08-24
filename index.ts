@@ -1,18 +1,18 @@
 import express from 'express'
 import path from 'path'
 
-import { RouteInterface, OptionsInterface } from './interfaces'
-import { HTTPMethodLowerCaseType } from './types'
+import { IRoute, IOptions } from './interfaces'
+import { THTTPMethodLowerCase } from './types'
 
 export = main
 
 /**
  * MAIN
- * @param routes {RouteInterface[]}
- * @param options {OptionsInterface}
+ * @param routes {IRoute[]}
+ * @param options {IOptions}
  * @return {express.Router}
  */
-function main(routes: RouteInterface[], options: OptionsInterface): express.Router {
+function main(routes: IRoute[], options: IOptions): express.Router {
   options ||= {}
   options.controllersDir ||= path.resolve('controllers')
   options.middlewareDir ||= path.resolve('middleware')
@@ -27,16 +27,16 @@ function main(routes: RouteInterface[], options: OptionsInterface): express.Rout
 /**
  * FILLING-ROUTER
  * @param Router {express.Router}
- * @param routes {RouteInterface[]}
- * @param options {OptionsInterface}
+ * @param routes {IRoute[]}
+ * @param options {IOptions}
  * @param parentUrl {string}
  * @param parentMiddleware {express.Handler[]}
  * @return {void}
  */
 function fillingRouter(
   Router: express.Router,
-  routes: RouteInterface[],
-  options: OptionsInterface,
+  routes: IRoute[],
+  options: IOptions,
   parentUrl: string = '',
   parentMiddleware: express.Handler[] = []
 ) {
@@ -53,12 +53,12 @@ function fillingRouter(
 
       for (const middlewareHandler of middlewareHandlers) {
         switch (typeof middlewareHandler) {
-          case 'string':
-            middleware.push(require(options.middlewareDir + '/' + middlewareHandler))
-            break
-
           case 'function':
             middleware.push(middlewareHandler)
+            break
+
+          case 'string':
+            middleware.push(<express.Handler>require(options.middlewareDir + '/' + middlewareHandler))
             break
         }
       }
@@ -67,7 +67,7 @@ function fillingRouter(
     if (route.method && route.controller) {
       const controller = getController(route.controller, options)
 
-      Router[<HTTPMethodLowerCaseType>route.method.toLowerCase()](url, ...middleware, controller)
+      Router[<THTTPMethodLowerCase>route.method.toLowerCase()](url, ...middleware, controller)
     }
 
     if (route.children?.length) {
@@ -79,10 +79,10 @@ function fillingRouter(
 /**
  * GET-CONTROLLER
  * @param controller {express.Handler | string}
- * @param options {OptionsInterface}
+ * @param options {IOptions}
  * @return {express.Handler}
  */
-function getController(controller: express.Handler | string, options: OptionsInterface): express.Handler {
+function getController(controller: express.Handler | string, options: IOptions): express.Handler {
   switch (typeof controller) {
     case 'function': {
       return controller
@@ -91,12 +91,12 @@ function getController(controller: express.Handler | string, options: OptionsInt
     case 'string': {
       const [controllerPath, controllerMethod] = controller.split('.')
 
-      const _controller = require(options.controllersDir + '/' + controllerPath)
+      const controllerFullPath = options.controllersDir + '/' + controllerPath
 
       if (controllerMethod) {
-        return _controller[controllerMethod]
+        return <express.Handler>require(controllerFullPath)[controllerMethod]
       } else {
-        return _controller
+        return <express.Handler>require(controllerFullPath)
       }
     }
   }

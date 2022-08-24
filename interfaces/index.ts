@@ -1,19 +1,19 @@
 import express from 'express'
 
-import { HTTPMethodUpperCaseType } from '../types'
+import { THTTPMethodUpperCase } from '../types'
 
-export interface RouteInterface {
+export interface IRoute {
   group?: string
   dev?: boolean
   url?: string
-  method?: HTTPMethodUpperCaseType
-  middleware?: string | express.Handler | (string | express.Handler)[]
+  method?: THTTPMethodUpperCase
+  middleware?: express.Handler | string | (express.Handler | string)[]
   controller?: express.Handler | string
   docs?: { [id: string]: any }
-  children?: RouteInterface[]
+  children?: IRoute[]
 }
 
-export interface OptionsInterface {
+export interface IOptions {
   controllersDir?: string
   middlewareDir?: string
 }

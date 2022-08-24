@@ -6,8 +6,8 @@ const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 /**
  * MAIN
- * @param routes {RouteInterface[]}
- * @param options {OptionsInterface}
+ * @param routes {IRoute[]}
+ * @param options {IOptions}
  * @return {express.Router}
  */
 function main(routes, options) {
@@ -21,8 +21,8 @@ function main(routes, options) {
 /**
  * FILLING-ROUTER
  * @param Router {express.Router}
- * @param routes {RouteInterface[]}
- * @param options {OptionsInterface}
+ * @param routes {IRoute[]}
+ * @param options {IOptions}
  * @param parentUrl {string}
  * @param parentMiddleware {express.Handler[]}
  * @return {void}
@@ -38,11 +38,11 @@ function fillingRouter(Router, routes, options, parentUrl = '', parentMiddleware
             const middlewareHandlers = Array.isArray(route.middleware) ? route.middleware : [route.middleware];
             for (const middlewareHandler of middlewareHandlers) {
                 switch (typeof middlewareHandler) {
-                    case 'string':
-                        middleware.push(require(options.middlewareDir + '/' + middlewareHandler));
-                        break;
                     case 'function':
                         middleware.push(middlewareHandler);
+                        break;
+                    case 'string':
+                        middleware.push(require(options.middlewareDir + '/' + middlewareHandler));
                         break;
                 }
             }
@@ -59,7 +59,7 @@ function fillingRouter(Router, routes, options, parentUrl = '', parentMiddleware
 /**
  * GET-CONTROLLER
  * @param controller {express.Handler | string}
- * @param options {OptionsInterface}
+ * @param options {IOptions}
  * @return {express.Handler}
  */
 function getController(controller, options) {
@@ -69,12 +69,12 @@ function getController(controller, options) {
         }
         case 'string': {
             const [controllerPath, controllerMethod] = controller.split('.');
-            const _controller = require(options.controllersDir + '/' + controllerPath);
+            const controllerFullPath = options.controllersDir + '/' + controllerPath;
             if (controllerMethod) {
-                return _controller[controllerMethod];
+                return require(controllerFullPath)[controllerMethod];
             }
             else {
-                return _controller;
+                return require(controllerFullPath);
             }
         }
     }
