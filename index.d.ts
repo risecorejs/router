@@ -1,10 +1,9 @@
 import express from 'express';
 import { IRoute, IOptions } from './interfaces';
-export = main;
 /**
- * MAIN
+ * ROUTER
  * @param routes {IRoute[]}
  * @param options {IOptions}
  * @return {express.Router}
  */
-declare function main(routes: IRoute[], options: IOptions): express.Router;
+export default function (routes: IRoute[], options: IOptions): express.Router;

@@ -2,15 +2,16 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 /**
- * MAIN
+ * ROUTER
  * @param routes {IRoute[]}
  * @param options {IOptions}
  * @return {express.Router}
  */
-function main(routes, options) {
+function default_1(routes, options) {
     options ||= {};
     options.controllersDir ||= path_1.default.resolve('controllers');
     options.middlewareDir ||= path_1.default.resolve('middleware');
@@ -18,6 +19,7 @@ function main(routes, options) {
     fillingRouter(Router, routes, options);
     return Router;
 }
+exports.default = default_1;
 /**
  * FILLING-ROUTER
  * @param Router {express.Router}
@@ -79,4 +81,3 @@ function getController(controller, options) {
         }
     }
 }
-module.exports = main;
