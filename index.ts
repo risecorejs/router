@@ -4,15 +4,13 @@ import path from 'path'
 import { IRoute, IOptions } from './interfaces'
 import { THTTPMethodLowerCase } from './types'
 
-export = main
-
 /**
- * MAIN
+ * ROUTER
  * @param routes {IRoute[]}
  * @param options {IOptions}
  * @return {express.Router}
  */
-function main(routes: IRoute[], options: IOptions): express.Router {
+export default function (routes: IRoute[], options: IOptions): express.Router {
   options ||= {}
   options.controllersDir ||= path.resolve('controllers')
   options.middlewareDir ||= path.resolve('middleware')
