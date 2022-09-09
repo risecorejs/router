@@ -44,7 +44,7 @@ function fillingRouter(Router, routes, options, parentUrl = '', parentMiddleware
                         middleware.push(middlewareHandler);
                         break;
                     case 'string':
-                        middleware.push(require(options.middlewareDir + '/' + middlewareHandler));
+                        middleware.push(require(path_1.default.join(options.middlewareDir, middlewareHandler)).default);
                         break;
                 }
             }
@@ -71,12 +71,12 @@ function getController(controller, options) {
         }
         case 'string': {
             const [controllerPath, controllerMethod] = controller.split('.');
-            const controllerFullPath = options.controllersDir + '/' + controllerPath;
+            const controllerFullPath = path_1.default.join(options.controllersDir, controllerPath);
             if (controllerMethod) {
                 return require(controllerFullPath)[controllerMethod];
             }
             else {
-                return require(controllerFullPath);
+                return require(controllerFullPath).default;
             }
         }
     }

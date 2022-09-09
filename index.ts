@@ -2,7 +2,7 @@ import express from 'express'
 import path from 'path'
 
 import { IRoute, IOptions } from './interfaces'
-import { THTTPMethodLowerCase } from './types'
+import { THTTPMethod } from './types'
 
 /**
  * ROUTER
@@ -10,7 +10,7 @@ import { THTTPMethodLowerCase } from './types'
  * @param options {IOptions}
  * @return {express.Router}
  */
-export default function (routes: IRoute[], options: IOptions): express.Router {
+export default function (routes: IRoute[], options?: IOptions): express.Router {
   options ||= {}
   options.controllersDir ||= path.resolve('controllers')
   options.middlewareDir ||= path.resolve('middleware')
@@ -56,7 +56,7 @@ function fillingRouter(
             break
 
           case 'string':
-            middleware.push(<express.Handler>require(options.middlewareDir + '/' + middlewareHandler))
+            middleware.push(require(path.join(<string>options.middlewareDir, middlewareHandler)).default)
             break
         }
       }
@@ -65,7 +65,7 @@ function fillingRouter(
     if (route.method && route.controller) {
       const controller = getController(route.controller, options)
 
-      Router[<THTTPMethodLowerCase>route.method.toLowerCase()](url, ...middleware, controller)
+      Router[<Lowercase<THTTPMethod>>route.method.toLowerCase()](url, ...middleware, controller)
     }
 
     if (route.children?.length) {
@@ -89,12 +89,12 @@ function getController(controller: express.Handler | string, options: IOptions):
     case 'string': {
       const [controllerPath, controllerMethod] = controller.split('.')
 
-      const controllerFullPath = options.controllersDir + '/' + controllerPath
+      const controllerFullPath = path.join(<string>options.controllersDir, controllerPath)
 
       if (controllerMethod) {
-        return <express.Handler>require(controllerFullPath)[controllerMethod]
+        return require(controllerFullPath)[controllerMethod]
       } else {
-        return <express.Handler>require(controllerFullPath)
+        return require(controllerFullPath).default
       }
     }
   }

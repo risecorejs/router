@@ -6,4 +6,4 @@ import { IRoute, IOptions } from './interfaces';
  * @param options {IOptions}
  * @return {express.Router}
  */
-export default function (routes: IRoute[], options: IOptions): express.Router;
+export default function (routes: IRoute[], options?: IOptions): express.Router;
